@@ -1,0 +1,11 @@
+---
+# tasks file for tomcat
+
+- name: Download Tomcat
+  shell: 'wget http://apache.ip-connect.vn.ua/tomcat/tomcat-9/v{{ TOMCAT_VERSION }}/bin/apache-tomcat-{{ TOMCAT_VERSION }}.tar.gz -O /tmp/apache-tomcat-{{ TOMCAT_VERSION }}.tar.gz'
+
+- name: Unarchive Tomcat
+  shell: 'tar -zxvf /tmp/apache-tomcat-{{ TOMCAT_VERSION }}.tar.gz -C /tmp'
+
+- name: Start Tomcat
+  shell: 'PATH=/tmp/jdk1.8.0_131/:$PATH JAVA_HOME=/tmp/jdk1.8.0_131/ /tmp/apache-tomcat-{{ TOMCAT_VERSION }}/bin/catalina.sh start'

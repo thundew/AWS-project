@@ -1,0 +1,4 @@
+---
+# defaults file for jdk
+
+JAVA_VERSION: '8u131'

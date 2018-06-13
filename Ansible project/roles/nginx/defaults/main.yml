@@ -1,0 +1,5 @@
+---
+# defaults file for nginx
+PROXY_IP: '54.197.185.196'
+LISTEN_IP: '{{ PROXY_IP }}'
+NGINX_PORT: '81'

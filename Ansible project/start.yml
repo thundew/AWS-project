@@ -1,0 +1,7 @@
+---
+- name: Run playbook 
+  hosts: all
+  roles:
+    - jdk
+    - tomcat 
+    - nginx

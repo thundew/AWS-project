@@ -1,0 +1,9 @@
+server {
+    listen       {{ NGINX_PORT }};
+    listen       {{ LISTEN_IP }}:{{ NGINX_PORT }};
+    server_name  {{ LISTEN_IP }};
+
+    location / {
+        proxy_pass      http://{{ PROXY_IP }}:8080/;
+    }
+}

@@ -1,0 +1,14 @@
+---
+# tasks file for nginx
+
+- name: TEmplate smthg
+  template:
+    src: name.yml
+    dest: /etc/nginx/conf.d/name.conf
+  become: true
+  become_method: sudo
+
+- name: start
+  shell: service nginx start
+  become: true
+  become_method: sudo
