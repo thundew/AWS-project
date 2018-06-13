@@ -11,10 +11,15 @@ SUBNET_PRIVATE_NAME="PrivateCast"
 #echo "2 Delete all"
 #echo "3 Exit"
 #read doing
-case $1 in
+echo enter what you need to create
 
+select input in "create" "delete"; do
+case "$input" in
 create)
-  case $2 in 
+
+  select net in "vpc" "vms"; do
+  case "$net" in
+
   vpc)
   #Creating of VPC
   VPC_ID=$(aws ec2 create-vpc \
@@ -110,83 +115,91 @@ create)
     --destination-cidr-block 0.0.0.0/0 \
     --gateway-id $NAT_GW_ID)
   echo "Comlete Internet Stack"
+  break;;
 
+  vms)
+  select vm in "public" "private"; do
+  case "$vm" in
+    public)
   # Run instances 1 Public
   INSTANCE_ID=$(aws ec2 run-instances \
-  --image-id ami-14c5486b \
-  --count 2 \
-  --instance-type t2.micro \
-  --key-name CastVirginia \
-  --subnet-id $SUBNET_PUBLIC_ID \
-  --query 'Instance.{InstanceId:InstanceId}'\
-  --output text)
-
-  # Run instances 2 Private
-  INSTANCE_ID=$(aws ec2 run-instances \
-  --image-id ami-14c5486b \
+  --image-id ami-6871a115 \
   --count 1 \
   --instance-type t2.micro \
   --key-name CastVirginia \
-  --subnet-id $SUBNET_PRIVATE_ID \
+  --subnet-id $(aws ec2 describe-subnets \
+  --filters Name=tag:Name,Values=PublicCast\
+  --output text | grep subnet | awk '{ print $8 }') \
   --query 'Instance.{InstanceId:InstanceId}'\
   --output text)
+    break;;
+
+    private)
+  # Run instances 2 Private
+  INSTANCE_ID=$(aws ec2 run-instances \
+  --image-id ami-d5bf2caa \
+  --count 1 \
+  --instance-type t2.micro \
+  --key-name CastVirginia \
+  --subnet-id $(aws ec2 describe-subnets \
+  --filters Name=tag:Name,Values=PrivateCast\
+  --output text | grep subnet | awk '{ print $8 }')\
+  --output text)
   echo "Launched instances"
-  ;;
+    break;;
+         esac
+        done
+    break;;
+   esac
+  done
 
-#  2)
-#  aws ec2 terminate-instances\
-#  --instance-ids $(aws ec2 describe-instances\
-#  --filters  "Name=instance-state-name,Values=pending,running,stopped,stopping"\
-#  --query "Reservations[].Instances[].[InstanceId]"\
-#  --output text | tr '\n' ' ')
-#
-#  aws ec2 delete-nat-gateway\
-#  --nat-gateway-id $(aws ec2 describe-nat-gateways\
-#  --query 'NatGateways[*].{NatGatewayId:NatGatewayId}' \
-#  --output text)
-#
-#  aws ec2 disassociate-address\
-#  --association-id $(aws ec2 describe-addresses\
-#  --filters "Name=domain,Values=vpc"\
-#  --query 'Addresses[*].{AllocationId:AllocationId}'\
-#  --output text)
-#
-#  aws ec2 release-address\
-#  --allocation-id $(aws ec2 describe-addresses\
-#  --filters "Name=domain,Values=vpc"\
-#  --query 'Addresses[*].{AllocationId:AllocationId}'\
-#  --output text)
-#
-#  aws ec2 detach-internet-gateway \
-#  --internet-gateway-id $(aws ec2 describe-internet-gateways \
-#  --query 'InternetGateways[*].{InternetGatewayId:InternetGatewayId}' \
-#  --output text)\
-#  --vpc-id $(aws ec2 describe-vpcs\
-#  --query 'Vpcs[1].{VpcId:VpcId}'\
-#  --output text)
-#
-#  aws ec2 delete-internet-gateway\
-#  --internet-gateway-id $(aws ec2 describe-internet-gateways \
-#  --query 'InternetGateways[*].{InternetGatewayId:InternetGatewayId}' \
-#  --output text)
-#
-#  aws ec2 delete-route-table\
-#  --route-table-id $(aws ec2 describe-route-tables \
-#  --query 'RouteTables[*].{RouteTableId:RouteTableId}'\
-#  --output text)
-#
-#  aws ec2 delete-vpc\
-#  --vpc-id $(aws ec2 describe-vpcs\
-#  --query 'Vpcs[1].{VpcId:VpcId}'\
-#  --output text)
-#  echo "Sector clear :)"
-#  ;;
+  delete)
+    aws ec2 terminate-instances\
+    --instance-ids $(aws ec2 describe-instances\
+   --filters  "Name=instance-state-name,Values=pending,running,stopped,stopping"\
+   --query "Reservations[].Instances[].[InstanceId]"\
+   --output text | tr '\n' ' ')
 
-  exit )
-  exit 0
-  echo "Bye Bye"
-  ;;
+   aws ec2 delete-nat-gateway\
+   --nat-gateway-id $(aws ec2 describe-nat-gateways\
+   --query 'NatGateways[*].{NatGatewayId:NatGatewayId}' \
+   --output text)
 
-  *) echo "Incorrect Value"
+   aws ec2 disassociate-address\
+   --association-id $(aws ec2 describe-addresses\
+   --filters "Name=domain,Values=vpc"\
+   --query 'Addresses[*].{AllocationId:AllocationId}'\
+   --output text)
 
-  esac
+   aws ec2 release-address\
+   --allocation-id $(aws ec2 describe-addresses\
+   --filters "Name=domain,Values=vpc"\
+   --query 'Addresses[*].{AllocationId:AllocationId}'\
+   --output text)
+
+   aws ec2 detach-internet-gateway \
+   --internet-gateway-id $(aws ec2 describe-internet-gateways \
+   --query 'InternetGateways[*].{InternetGatewayId:InternetGatewayId}' \
+   --output text)\
+   --vpc-id $(aws ec2 describe-vpcs\
+   --query 'Vpcs[1].{VpcId:VpcId}'\
+   --output text)
+
+   aws ec2 delete-internet-gateway\
+   --internet-gateway-id $(aws ec2 describe-internet-gateways \
+   --query 'InternetGateways[*].{InternetGatewayId:InternetGatewayId}' \
+   --output text)
+
+   aws ec2 delete-route-table\
+   --route-table-id $(aws ec2 describe-route-tables \
+   --query 'RouteTables[*].{RouteTableId:RouteTableId}'\
+   --output text)
+
+   aws ec2 delete-vpc\
+   --vpc-id $(aws ec2 describe-vpcs\
+   --query 'Vpcs[1].{VpcId:VpcId}'\
+   --output text)
+   echo "Sector clear :)"
+  break;;
+ esac
+done
